@@ -1,0 +1,12 @@
+# flask
+requests
+googlemaps
+google-genai
+fastapi
+uvicorn
+pydantic
+streamlit
+numpy
+sentence-transformers
+faiss-cpu
+python-dotenv
