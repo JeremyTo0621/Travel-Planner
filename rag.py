@@ -5,7 +5,7 @@ import faiss
 import numpy as np
 
 class TravelRAG:
-    def __init__(self, csv_path="Worldwide Travel Cities Dataset (Ratings and Climate).csv"):
+    def __init__(self, csv_path="cities.csv"):
         """
         Constructor for TravelRAG.
 

@@ -16,7 +16,7 @@ class TravelChatbot:
         # load Gemini client
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
         # init RAG
-        self.rag = TravelRAG("Worldwide Travel Cities Dataset (Ratings and Climate).csv")
+        self.rag = TravelRAG("cities.csv")
 
     def parse_prompt(self, message: str) -> dict:
         """

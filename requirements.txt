@@ -1,6 +1,4 @@
-# flask
 requests
-googlemaps
 google-genai
 fastapi
 uvicorn
@@ -10,3 +8,7 @@ numpy
 sentence-transformers
 faiss-cpu
 python-dotenv
+meteostat
+pandas
+geopy
+datetime

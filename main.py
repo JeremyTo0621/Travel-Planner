@@ -17,12 +17,17 @@ def chat(request: ChatRequest):
     """
     Main chat endpoint (synchronous).
     Returns structured JSON with itinerary, weather, rag info, and parsed prompt.
+    Handles Gemini quota or API errors gracefully.
     """
     try:
         result = chatbot.generate_itinerary(request.message)
         return result
     except Exception as e:
-        return {"error": str(e)}
+        error_msg = str(e)
+        # Check if Gemini quota issue
+        if "quota" in error_msg.lower() or "429" in error_msg or "exceeded" in error_msg:
+            return {"error": "Gemini API quota exceeded. Please try again later."}
+        return {"error": f"Unexpected error: {error_msg}"}
 
 @app.get("/")
 def root():
