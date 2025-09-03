@@ -1,33 +1,33 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
-from agents import planner_agent
+from chatbot import TravelChatbot
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(title="AI Travel Planner", version="1.0.0")
+app = FastAPI(title="AI Travel Planner", version="2.0.0")
+chatbot = TravelChatbot()
 
-class TripRequest(BaseModel):
-    city: str
-    theme: str
-    days: int
+class ChatRequest(BaseModel):
+    message: str
 
-@app.get("/")
-def read_root():
-    return {"message": "AI Travel Planner API is running!"}
-
-@app.post("/plan")
-def plan_trip(request: TripRequest):
+@app.post("/chat")
+def chat(request: ChatRequest):
+    """
+    Main chat endpoint (synchronous).
+    Returns structured JSON with itinerary, weather, rag info, and parsed prompt.
+    """
     try:
-        if not os.getenv("GEMINI_API_KEY"):
-            raise HTTPException(status_code=500, detail="GEMINI_API_KEY not found")
-        
-        result = planner_agent(request.city, request.theme, request.days)
+        result = chatbot.generate_itinerary(request.message)
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"error": str(e)}
 
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
+@app.get("/")
+def root():
+    return {"message": "Travel Chatbot API is running"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
