@@ -20,8 +20,19 @@ class TravelChatbot:
 
     def parse_prompt(self, message: str) -> dict:
         """
-        Use Gemini to parse the user’s free-text request into structured details.
-        Always returns a dict with keys: place, theme, duration, time, extras.
+        Use Gemini to parse the user's free-text request into structured details.
+        
+        The function always returns a dict with the following keys:
+        - place: the destination city
+        - theme: one of the following themes: Culture, Adventure, Nature, Beaches, Nightlife, Cuisine, Wellness, Urban, Seclusion
+        - duration: the length of the trip in days
+        - time: a string indicating the time of year (e.g. "Today", "Next Week", "Summer", etc.)
+        - extras: any additional information the user provided
+        
+        The function is very forgiving and will return defaults if the user does not provide all of the information.
+        For example, if the user does not provide a theme, the function will default to "Culture".
+        If the user does not provide a duration, the function defaults to 5.
+        If the user does not provide a time, the function will default to "Today".
         """
 
         prompt = f"""
@@ -134,133 +145,18 @@ class TravelChatbot:
 
     def generate_itinerary(self, message: str) -> dict:
         """
-        Entry point called from FastAPI.
+        Main entry point to generate a travel itinerary.
+
+        The method takes a user's free-text request and returns a structured JSON
+        with the following keys: parsed_prompt, weather, rag_info_raw, rag_summary, and itinerary.
+
+        The method first calls parse_prompt to extract structured information from the request
+        and then calls travel_planner to generate the itinerary based on the extracted information.
         """
         details = self.parse_prompt(message)
         result = self.travel_planner(details)
         return result
 
-# class TravelChatbot:
-#     def __init__(self):
-#         self.client = client
-#         self.rag = rag
-
-#     def parse_prompt(self, user_prompt: str) -> dict:
-#         """
-#         Ask Gemini to extract fields. Returns a dict:
-#         {
-#           "place": "Tokyo, Japan",
-#           "theme": "culture",
-#           "duration_days": 5,
-#           "time_expression": "June",   # or "today" if unspecified
-#           "extra": "any extra text user gave"
-#         }
-#         """
-#         instruction = f"""
-# You are an extractor. Given the user's travel request, output ONLY a single JSON object (no explanation).
-# Extract and normalize these fields (use null if unknown):
-# - place: city or "city, country" if present
-# - theme: travel theme (e.g., culture, food, beach)
-# - duration_days: integer number of days (e.g., 5) or null
-# - time_expression: a date/month/season phrase from the prompt (e.g., "June", "winter", "next few weeks") or "today" if none given
-# - extra: any other constraints (budget, mobility needs) or null
-
-# User input:
-# \"\"\"{user_prompt}\"\"\"
-# """
-#         resp = self.client.models.generate_content(
-#             model="gemini-2.5-flash",
-#             contents=instruction,
-#             config=types.GenerateContentConfig(temperature=0.0)
-#         )
-#         text = resp.text.strip()
-
-#         # try to extract the first JSON object from the model output
-#         try:
-#             parsed = json.loads(text)
-#         except Exception:
-#             import re
-#             m = re.search(r'(\{.*\})', text, re.S)
-#             if m:
-#                 parsed = json.loads(m.group(1))
-#             else:
-#                 # fallback defaults
-#                 parsed = {
-#                     "place": None,
-#                     "theme": "culture",
-#                     "duration_days": 5,
-#                     "time_expression": "today",
-#                     "extra": None
-#                 }
-
-#         # normalize defaults
-#         if not parsed.get("place"):
-#             parsed["place"] = None
-#         if not parsed.get("theme"):
-#             parsed["theme"] = "culture"
-#         if not parsed.get("duration_days"):
-#             parsed["duration_days"] = 5
-#         if not parsed.get("time_expression"):
-#             parsed["time_expression"] = "today"
-
-#         # convert duration to int if possible
-#         try:
-#             parsed["duration_days"] = int(parsed["duration_days"])
-#         except Exception:
-#             parsed["duration_days"] = 5
-
-#         return parsed
-
-#     def generate_itinerary(self, user_prompt: str) -> str:
-#         """
-#         High-level flow:
-#         1. parse user prompt -> struct
-#         2. get RAG context for place/theme
-#         3. get weather summary via weather.get_weather_for_trip(parsed)
-#         4. ask Gemini to generate the itinerary using structured fields + RAG + weather
-#         Return final textual itinerary that begins with the extracted JSON (for UI).
-#         """
-#         parsed = self.parse_prompt(user_prompt)
-
-#         # build rag query
-#         rag_query = parsed.get("place") or ""
-#         if parsed.get("theme"):
-#             rag_query = f"{rag_query} {parsed['theme']}".strip()
-
-#         kb_docs = self.rag.search(rag_query, top_k=3)  # list of short doc strings
-
-#         # get weather
-#         weather_summary = get_weather_for_trip(parsed)  # dict with summary and details
-
-#         # craft planning prompt
-#         plan_prompt = f"""
-# You are a helpful travel planner.
-# Use the structured trip details below and the knowledge snippets to produce a clear, day-by-day itinerary.
-
-# STRUCTURED DETAILS:
-# {json.dumps(parsed, ensure_ascii=False, indent=2)}
-
-# KNOWLEDGE SNIPPETS:
-# {json.dumps(kb_docs, ensure_ascii=False, indent=2)}
-
-# WEATHER SUMMARY:
-# {json.dumps(weather_summary, ensure_ascii=False, indent=2)}
-
-# TASK:
-# - Produce a {parsed['duration_days']}-day itinerary (or suggest 3-5 days if duration missing).
-# - For each day include morning/afternoon/evening suggestions, a short reason why the spot fits the theme, and one food suggestion.
-# - If weather suggests changes (e.g., rainy days), propose alternatives or moved activities.
-# - If the plan could be improved by moving date or choosing a nearby city, offer 1 short alternative and why.
-
-# Return the itinerary as plain text. Start the output with a single JSON line containing 'parsed' and 'weather_summary' for the UI to read.
-# """
-#         resp = self.client.models.generate_content(
-#             model="gemini-2.0-flash-exp",
-#             contents=plan_prompt,
-#             config=types.GenerateContentConfig(temperature=0.7)
-#         )
-
-#         return resp.text.strip()
 
 
 

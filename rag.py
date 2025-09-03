@@ -6,6 +6,18 @@ import numpy as np
 
 class TravelRAG:
     def __init__(self, csv_path="Worldwide Travel Cities Dataset (Ratings and Climate).csv"):
+        """
+        Constructor for TravelRAG.
+
+        Args:
+            csv_path (str, optional): Path to the Worldwide Travel Cities Dataset (Ratings and Climate).csv file. Defaults to "Worldwide Travel Cities Dataset (Ratings and Climate).csv".
+
+        The constructor loads the Worldwide Travel Cities Dataset (Ratings and Climate).csv file into a pandas data frame, and initializes the
+        SentenceTransformer model and the Faiss index. The load() method is called at the end of the constructor to load the data into the model and
+        index.
+
+        If the csv_path is not provided, a fallback list of documents is used instead.
+        """
         self.csv_path = csv_path
         self.df = None
         self.docs = []
@@ -14,6 +26,22 @@ class TravelRAG:
         self.load()
 
     def load(self):
+        """
+        Load the Worldwide Travel Cities Dataset (Ratings and Climate).csv file into a pandas data frame, and initialize the SentenceTransformer model and
+        the Faiss index. If the csv_path is not provided or does not exist, a fallback list of documents is used instead.
+
+        The method reads the csv file into a pandas data frame, constructs a list of short descriptions for each city, and uses the SentenceTransformer model
+        to encode the descriptions into embeddings. The embeddings are then added to the Faiss index.
+
+        If the csv_path does not exist, the method uses a fallback list of documents instead. The fallback list contains four cities: Tokyo, Kyoto, Paris, and
+        Bangkok, with short descriptions for each city. The fallback list is used to initialize the SentenceTransformer model and the Faiss index.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         if not os.path.exists(self.csv_path):
             # fallback docs if csv missing
             self.docs = [
@@ -39,6 +67,17 @@ class TravelRAG:
     def search(self, query: str, top_k=1):
         """
         Search FAISS for the closest matching city and return structured info.
+
+        The method takes a query string (e.g. "Tokyo Japan") and returns a dict with the following keys:
+        - city: the closest matching city
+        - country: the country the city is in
+        - short_description: a short description of the city
+        - climate: a short description of the climate in the city
+        - rating: the average rating of the city from the dataset
+        - lat: the latitude of the city
+        - lon: the longitude of the city
+
+        If the query does not match any city, the method returns a message indicating that no info was found.
         """
         if not query:
             return "No query provided."
