@@ -28,6 +28,7 @@ An AI-powered travel planning assistant that generates personalized itineraries,
 - **Docker** – containerization for deployment  
 
 ## Project Structure
+```
 ├── main.py                 # FastAPI backend
 ├── chatbot.py              # TravelChatbot class
 ├── travel_ui.py            # Streamlit frontend
@@ -39,3 +40,9 @@ An AI-powered travel planning assistant that generates personalized itineraries,
 ├── .dockerignore           # Files to ignore in Docker build
 ├── .gitignore              # Git ignore file
 └── README.md
+```
+
+## Planned Improvements/Updates
+- Switching from SentenceTransformer to Gemini or OpenAi embeddings api
+- Switch to using langhchain for Rag implementation
+- Deploy a new frontend on Vercel (keeping backend hosted on EC2)
